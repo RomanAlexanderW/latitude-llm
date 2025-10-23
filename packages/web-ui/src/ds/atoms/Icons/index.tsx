@@ -150,6 +150,7 @@ import {
   XIcon,
   Youtube,
   Zap,
+  ShieldAlertIcon,
 } from 'lucide-react'
 import { MouseEvent } from 'react'
 
@@ -209,6 +210,7 @@ import Wordpress from './custom-icons/logos/Wordpress'
 import YepCode from './custom-icons/logos/YepCode'
 
 const Icons = {
+  shieldAlert: ShieldAlertIcon,
   addCircle: CirclePlus,
   addSquare: SquarePlus,
   squareChart: SquareChartGantt,
