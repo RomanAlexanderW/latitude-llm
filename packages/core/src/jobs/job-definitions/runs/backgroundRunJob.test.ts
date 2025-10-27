@@ -11,7 +11,7 @@ import * as factories from '../../../tests/factories'
 import { mockToolRequestsCopilot } from '../../../tests/helpers'
 import { RedisStream } from '../../../lib/redisStream'
 import { publisher } from '../../../events/publisher'
-import { getDataForInitialRequest } from '../documents/runDocumentAtCommitWithAutoToolResponses/getDataForInitialRequest'
+import { getJobDocumentData } from '../helpers'
 import { startRun } from '../../../services/runs/start'
 import { endRun } from '../../../services/runs/end'
 import { updateRun } from '../../../services/runs/update'
@@ -23,9 +23,7 @@ import type {
 
 vi.mock('../../../lib/redisStream')
 vi.mock('../../../events/publisher')
-vi.mock(
-  '../documents/runDocumentAtCommitWithAutoToolResponses/getDataForInitialRequest',
-)
+vi.mock('../helpers/getJobDocumentData')
 vi.mock('../../../services/runs/start')
 vi.mock('../../../services/runs/end')
 vi.mock('../../../services/runs/update')
@@ -97,9 +95,9 @@ describe('backgroundRunJob', () => {
   })
 
   describe('error handling', () => {
-    it('should handle getDataForInitialRequest failure by writing error to stream', async () => {
+    it('should handle getJobDocumentData failure by writing error to stream', async () => {
       const error = new LatitudeError('Failed to get initial data')
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(Result.error(error))
+      vi.mocked(getJobDocumentData).mockResolvedValue(Result.error(error))
 
       const mod = await import('./backgroundRunJob')
       const backgroundRunJob = mod.backgroundRunJob
@@ -116,8 +114,8 @@ describe('backgroundRunJob', () => {
 
     it('should handle startRun failure by writing error to stream', async () => {
       const error = new LatitudeError('Failed to start run')
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(
-        Result.ok({ workspace, document, commit, project }),
+      vi.mocked(getJobDocumentData).mockResolvedValue(
+        Result.ok({ workspace, document, commit }),
       )
       vi.mocked(startRun).mockResolvedValue(Result.error(error))
 
@@ -136,8 +134,8 @@ describe('backgroundRunJob', () => {
 
     it('should handle runDocumentAtCommit failure by writing error to stream', async () => {
       const error = new LatitudeError('Document execution failed')
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(
-        Result.ok({ workspace, document, commit, project }),
+      vi.mocked(getJobDocumentData).mockResolvedValue(
+        Result.ok({ workspace, document, commit }),
       )
       vi.mocked(startRun).mockResolvedValue(Result.ok({} as any))
       vi.mocked(runDocumentAtCommit).mockResolvedValue(Result.error(error))
@@ -159,7 +157,7 @@ describe('backgroundRunJob', () => {
   describe('cleanup and resource management', () => {
     it('should always cleanup stream and unsubscribe from events', async () => {
       const error = new Error('Test error')
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(Result.error(error))
+      vi.mocked(getJobDocumentData).mockResolvedValue(Result.error(error))
 
       const mod = await import('./backgroundRunJob')
       const backgroundRunJob = mod.backgroundRunJob
@@ -176,7 +174,7 @@ describe('backgroundRunJob', () => {
 
     it('should always attempt to end the run even if other operations fail', async () => {
       const error = new Error('Test error')
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(Result.error(error))
+      vi.mocked(getJobDocumentData).mockResolvedValue(Result.error(error))
 
       const mod = await import('./backgroundRunJob')
       const backgroundRunJob = mod.backgroundRunJob
@@ -196,8 +194,8 @@ describe('backgroundRunJob', () => {
 
   describe('stream processing', () => {
     it('should handle stream processing errors gracefully', async () => {
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(
-        Result.ok({ workspace, document, commit, project }),
+      vi.mocked(getJobDocumentData).mockResolvedValue(
+        Result.ok({ workspace, document, commit }),
       )
       vi.mocked(startRun).mockResolvedValue(Result.ok({} as any))
       vi.mocked(runDocumentAtCommit).mockResolvedValue(
@@ -251,8 +249,8 @@ describe('backgroundRunJob', () => {
     })
 
     it('should handle updateRun failure gracefully without throwing', async () => {
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(
-        Result.ok({ workspace, document, commit, project }),
+      vi.mocked(getJobDocumentData).mockResolvedValue(
+        Result.ok({ workspace, document, commit }),
       )
       vi.mocked(startRun).mockResolvedValue(Result.ok({} as any))
       vi.mocked(runDocumentAtCommit).mockResolvedValue(
@@ -318,8 +316,8 @@ describe('backgroundRunJob', () => {
     })
 
     it('should handle endRun failure gracefully without throwing', async () => {
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(
-        Result.ok({ workspace, document, commit, project }),
+      vi.mocked(getJobDocumentData).mockResolvedValue(
+        Result.ok({ workspace, document, commit }),
       )
       vi.mocked(startRun).mockResolvedValue(Result.ok({} as any))
       vi.mocked(runDocumentAtCommit).mockResolvedValue(
@@ -374,8 +372,8 @@ describe('backgroundRunJob', () => {
     })
 
     it('should handle job cancellation correctly', async () => {
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(
-        Result.ok({ workspace, document, commit, project }),
+      vi.mocked(getJobDocumentData).mockResolvedValue(
+        Result.ok({ workspace, document, commit }),
       )
       vi.mocked(startRun).mockResolvedValue(Result.ok({} as any))
       vi.mocked(runDocumentAtCommit).mockResolvedValue(
@@ -455,8 +453,8 @@ describe('backgroundRunJob', () => {
     })
 
     it('should handle timeout in stream processing', async () => {
-      vi.mocked(getDataForInitialRequest).mockResolvedValue(
-        Result.ok({ workspace, document, commit, project }),
+      vi.mocked(getJobDocumentData).mockResolvedValue(
+        Result.ok({ workspace, document, commit }),
       )
       vi.mocked(startRun).mockResolvedValue(Result.ok({} as any))
       vi.mocked(runDocumentAtCommit).mockResolvedValue(
@@ -515,7 +513,7 @@ describe('backgroundRunJob', () => {
 
     it('should handle errors that are not Result.error instances', async () => {
       const error = new Error('Generic error')
-      vi.mocked(getDataForInitialRequest).mockRejectedValue(error)
+      vi.mocked(getJobDocumentData).mockRejectedValue(error)
 
       const mod = await import('./backgroundRunJob')
       const backgroundRunJob = mod.backgroundRunJob

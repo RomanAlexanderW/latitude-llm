@@ -4,6 +4,7 @@ import {
   ChainStepResponse,
   EMPTY_USAGE,
   OmittedLatitudeEventData,
+  SimulationSettings,
   StreamEventTypes,
   StreamType,
   VercelConfig,
@@ -69,6 +70,7 @@ export type StreamManagerProps = {
   messages?: LegacyMessage[]
   tokenUsage?: LanguageModelUsage
   tools?: Record<string, ToolHandler>
+  simulationSettings?: SimulationSettings
 }
 
 /**
@@ -87,6 +89,7 @@ export abstract class StreamManager {
   public uuid: string
   public workspace: Workspace
   public abortSignal?: AbortSignal
+  public readonly simulationSettings?: SimulationSettings
 
   public $context: TelemetryContext
   public $completion: ReturnType<typeof telemetry.completion> | undefined
@@ -119,6 +122,7 @@ export abstract class StreamManager {
     tools = {},
     messages = [],
     uuid = generateUUIDIdentifier(),
+    simulationSettings,
   }: StreamManagerProps) {
     this.uuid = uuid
     this.workspace = workspace
@@ -129,6 +133,7 @@ export abstract class StreamManager {
     this.abortSignal = abortSignal
     this.$context = context
     this.tools = tools
+    this.simulationSettings = simulationSettings
     this.stream = new ReadableStream<ChainEvent>({
       start: (controller) => {
         this.controller = controller

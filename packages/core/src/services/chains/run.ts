@@ -1,6 +1,7 @@
 import {
   LegacyVercelSDKVersion4Usage as LanguageModelUsage,
   MAX_STEPS_CONFIG_NAME,
+  SimulationSettings,
 } from '@latitude-data/constants'
 import { ChainError, RunErrorCodes } from '@latitude-data/constants/errors'
 import { Message as LegacyMessage } from '@latitude-data/constants/legacyCompiler'
@@ -42,6 +43,7 @@ type CommonArgs<C extends PromptlChain = PromptlChain> = {
 
   tools?: Record<string, ToolHandler>
   abortSignal?: AbortSignal
+  simulationSettings?: SimulationSettings
 }
 
 export type RunChainArgs<C extends PromptlChain> = CommonArgs<C>
@@ -58,6 +60,7 @@ export function runChain<C extends PromptlChain>({
   abortSignal,
   tools = {},
   uuid = generateUUIDIdentifier(),
+  simulationSettings,
 }: RunChainArgs<C>) {
   const chainStreamManager = new ChainStreamManager({
     context,
@@ -71,6 +74,7 @@ export function runChain<C extends PromptlChain>({
     source,
     chain,
     tools,
+    simulationSettings,
   })
 
   const { start, ...rest } = chainStreamManager.prepare()
