@@ -62,7 +62,7 @@
     "@traceloop/instrumentation-together": "0.13.0",
     "@traceloop/instrumentation-vertexai": "0.13.0",
     "zod": "catalog:",
-    "uuid": "11.1.0"
+    "uuid": "14.0.0"
   },
   "devDependencies": {
     "@latitude-data/constants": "workspace:*",
@@ -74,7 +74,7 @@
     "@types/node": "^22.15.21",
     "rollup": "^4.41.0",
     "rollup-plugin-dts": "^6.2.1",
-    "vitest": "^3.1.4",
+    "vitest": "^3.2.6",
     "@latitude-data/sdk": "workspace:*",
     "@anthropic-ai/sdk": "0.62.0",
     "@aws-sdk/client-bedrock-runtime": "^3.830.0",
